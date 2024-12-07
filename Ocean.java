@@ -1,7 +1,7 @@
 /**
  * This class manages the game state by keeping track of what entity is
  * contained in each position on the game board.
- * 
+ *
  * @author harry
  *
  */
@@ -27,7 +27,7 @@ public class Ocean implements OceanInterface {
 
 	/**
 	 * The number of ships totally sunk.
-	 * 
+	 *
 	 */
 	protected int shipsSunk;
 
@@ -37,6 +37,15 @@ public class Ocean implements OceanInterface {
 	 * appropriately.
 	 */
 	public Ocean() {
+		ships = new Ship[10][10];
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				ships[i][j] = new EmptySea();
+			}
+		}
+		shotsFired = 0;
+		hitCount = 0;
+		shipsSunk = 0;
 
 	}
 
@@ -44,24 +53,46 @@ public class Ocean implements OceanInterface {
 	 * Place all ten ships randomly on the (initially empty) ocean. Larger ships
 	 * must be placed before smaller ones to avoid cases where it may be impossible
 	 * to place the larger ships.
-	 * 
+	 *
 	 * @see java.util.Random
 	 */
 	public void placeAllShipsRandomly() {
+		// Fleet composition
+		Ship[] fleet = {
+				new Battleship(),
+				new Cruiser(), new Cruiser(),
+				new Destroyer(), new Destroyer(), new Destroyer(),
+				new Submarine(), new Submarine(), new Submarine(), new Submarine()
+		};
+
+		Random rand = new Random();
+		for (Ship ship : fleet) {
+			boolean placed = false;
+			while (!placed) {
+				int row = rand.nextInt(10);
+				int col = rand.nextInt(10);
+				boolean horizontal = rand.nextBoolean();
+				if (ship.okToPlaceShipAt(row, col, horizontal, this)) {
+					ship.placeShipAt(row, col, horizontal, this);
+					placed = true;
+				}
+			}
+		}
 
 	}
 
 	/**
 	 * Checks if this coordinate is not empty; that is, if this coordinate does not
 	 * contain an EmptySea reference.
-	 * 
+	 *
 	 * @param row    the row (0 to 9) in which to check for a floating ship
 	 * @param column the column (0 to 9) in which to check for a floating ship
 	 * @return {@literal true} if the given location contains a ship, and
 	 *         {@literal false} otherwise.
 	 */
 	public boolean isOccupied(int row, int column) {
-		return false;
+
+		return !(ships[row][column] instanceof EmptySea);
 	}
 
 	/**
@@ -70,14 +101,23 @@ public class Ocean implements OceanInterface {
 	 * contains a real, not sunk ship, this method should return {@literal true}
 	 * every time the user shoots at that location. If the ship has been sunk,
 	 * additional shots at this location should return {@literal false}.
-	 * 
+	 *
 	 * @param row    the row (0 to 9) in which to shoot
 	 * @param column the column (0 to 9) in which to shoot
 	 * @return {@literal true} if the given location contains an afloat ship (not an
 	 *         EmptySea), {@literal false} if it does not.
 	 */
 	public boolean shootAt(int row, int column) {
-		return false;
+		shotsFired++;
+		Ship target = ships[row][column];
+		boolean hit = target.shootAt(row, column);
+		if (hit) {
+			hitCount++;
+			if (target.isSunk()) {
+				shipsSunk++;
+			}
+		}
+		return hit;
 	}
 
 	/**
@@ -106,7 +146,7 @@ public class Ocean implements OceanInterface {
 	 *         {@literal false}.
 	 */
 	public boolean isGameOver() {
-		return false;
+		return shipsSunk == 10;
 	}
 
 	/**
@@ -115,11 +155,11 @@ public class Ocean implements OceanInterface {
 	 * contents of this array. While it is generally undesirable to allow methods in
 	 * one class to directly access instancce variables in another class, in this
 	 * case there is no clear and elegant alternatives.
-	 * 
+	 *
 	 * @return the 10x10 array of ships.
 	 */
 	public Ship[][] getShipArray() {
-		return null;
+		return ships;
 	}
 
 	/**
@@ -136,14 +176,40 @@ public class Ocean implements OceanInterface {
 	 * <li>'.' (a period) to indicate a location that you have never fired
 	 * upon.</li>
 	 * </ul>
-	 * 
+	 *
 	 * This is the only method in Ocean that has any printing capability, and it
 	 * should never be called from within the Ocean class except for the purposes of
 	 * debugging.
-	 * 
+	 *
 	 */
 	public void print() {
+		System.out.print("  ");
+		for (int col = 0; col < 10; col++) {
+			System.out.print(col + " ");
+		}
+		System.out.println();
 
+		for (int row = 0; row < 10; row++) {
+			System.out.print(row + " ");
+			for (int col = 0; col < 10; col++) {
+				Ship s = ships[row][col];
+				char symbol = '.';
+
+				if (s instanceof EmptySea) {
+					if (s.isHitAt(row, col)) {
+						symbol = '-';
+					}
+				} else {
+					if (s.isSunk()) {
+						symbol = 'x';
+					} else if (s.isHitAt(row, col)) {
+						symbol = 'S';
+					}
+				}
+
+				System.out.print(symbol + " ");
+			}
+			System.out.println();
+		}
 	}
-
 }
