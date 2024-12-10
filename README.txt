@@ -1,0 +1,1 @@
+This project was completed by myself without cooperation with others.
