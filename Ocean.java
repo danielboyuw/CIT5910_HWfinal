@@ -1,3 +1,5 @@
+import java.util.Random;
+
 /**
  * This class manages the game state by keeping track of what entity is
  * contained in each position on the game board.
@@ -57,7 +59,6 @@ public class Ocean implements OceanInterface {
 	 * @see java.util.Random
 	 */
 	public void placeAllShipsRandomly() {
-		// Fleet composition
 		Ship[] fleet = {
 				new Battleship(),
 				new Cruiser(), new Cruiser(),
@@ -72,14 +73,31 @@ public class Ocean implements OceanInterface {
 				int row = rand.nextInt(10);
 				int col = rand.nextInt(10);
 				boolean horizontal = rand.nextBoolean();
+
 				if (ship.okToPlaceShipAt(row, col, horizontal, this)) {
 					ship.placeShipAt(row, col, horizontal, this);
 					placed = true;
+					System.out.println(ship.getShipType() + " placed at (" + row + ", " + col + ")");
 				}
 			}
 		}
-
 	}
+
+
+
+	public void debugPrint() {
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				if (ships[i][j] instanceof EmptySea) {
+					System.out.print(". ");
+				} else {
+					System.out.print("S ");
+				}
+			}
+			System.out.println();
+		}
+	}
+
 
 	/**
 	 * Checks if this coordinate is not empty; that is, if this coordinate does not
@@ -110,15 +128,21 @@ public class Ocean implements OceanInterface {
 	public boolean shootAt(int row, int column) {
 		shotsFired++;
 		Ship target = ships[row][column];
-		boolean hit = target.shootAt(row, column);
-		if (hit) {
+		if (!(target instanceof EmptySea) && target.shootAt(row, column)) {
 			hitCount++;
 			if (target.isSunk()) {
 				shipsSunk++;
 			}
+			return true;
 		}
-		return hit;
+		return false;
 	}
+
+
+
+
+
+
 
 	/**
 	 * @return the number of shots fired in this game.
@@ -212,4 +236,6 @@ public class Ocean implements OceanInterface {
 			System.out.println();
 		}
 	}
+
 }
+
