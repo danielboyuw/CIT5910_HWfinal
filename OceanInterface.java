@@ -8,7 +8,7 @@ public interface OceanInterface {
 	 * 
 	 * @see java.util.Random
 	 */
-	public void placeAllShipsRandomly();
+	public void placeAllShipsRandomly() ;
 
 	/**
 	 * Checks if this coordinate is not empty; that is, if this coordinate does not
