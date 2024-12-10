@@ -3,6 +3,7 @@ public class Submarine extends Ship {
         super(1);
     }
 
+
     @Override
     public String getShipType() {
         return "submarine";
